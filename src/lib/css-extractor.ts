@@ -3,11 +3,11 @@
  * This is a simple regex-based extractor - could be upgraded to PostCSS for robustness
  */
 
-interface ExtractedFeatures {
+type ExtractedFeatures = {
   cssProperties: Set<string>;
-  htmlElements: Set<string>;
   htmlAttributes: Set<string>;
-}
+  htmlElements: Set<string>;
+};
 
 /**
  * Main extraction function - returns all features used in the HTML

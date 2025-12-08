@@ -1,8 +1,17 @@
 'use client';
 
-import { CircleXIcon, CircleAlertIcon, CircleCheckIcon, ChevronDownIcon, ExternalLinkIcon } from 'lucide-react';
+import {
+  CircleXIcon,
+  ArrowLeftIcon,
+  CircleAlertIcon,
+  CircleCheckIcon,
+  ChevronDownIcon,
+  ExternalLinkIcon,
+} from 'lucide-react';
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import {
@@ -12,6 +21,7 @@ import {
   type CanIEmailFeature,
   getFeatureSupportSummary,
 } from '@/lib/caniemail';
+import { cn } from '@/lib/utils';
 
 type CompatibilityIssue = {
   feature: CanIEmailFeature;
@@ -43,20 +53,6 @@ function SeverityIcon({ severity }: { severity: CompatibilityIssue['severity'] }
   }
 }
 
-function ClientBadge({ client, supported }: { client: MajorClient; supported: 'yes' | 'partial' | 'no' }) {
-  const colors = {
-    no: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    partial: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    yes: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  };
-
-  return (
-    <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${colors[supported]}`}>
-      {client.label}
-    </span>
-  );
-}
-
 function IssueCard({
   isExpanded,
   issue,
@@ -67,17 +63,15 @@ function IssueCard({
   onToggle: () => void;
 }) {
   const { feature, severity, summary } = issue;
+  const borderColor =
+    severity === 'error'
+      ? 'border-red-200 dark:border-red-900/50'
+      : severity === 'warning'
+        ? 'border-amber-200 dark:border-amber-900/50'
+        : 'border-green-200 dark:border-green-900/50';
 
   return (
-    <div
-      className={`overflow-hidden rounded-lg border ${
-        severity === 'error'
-          ? 'border-red-200 dark:border-red-900/50'
-          : severity === 'warning'
-            ? 'border-amber-200 dark:border-amber-900/50'
-            : 'border-green-200 dark:border-green-900/50'
-      }`}
-    >
+    <div className={cn('overflow-hidden rounded-lg border', borderColor)}>
       <button
         onClick={onToggle}
         className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
@@ -86,37 +80,42 @@ function IssueCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="font-medium text-slate-800 dark:text-slate-200">{feature.title}</span>
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-              {issue.property}
-            </code>
-          </div>
-          <div className="mt-1 flex flex-wrap gap-1">
-            {summary.unsupported.map((client) => {
-              return <ClientBadge supported="no" client={client} key={client.label} />;
-            })}
-            {summary.partial.map((client) => {
-              return <ClientBadge client={client} key={client.label} supported="partial" />;
-            })}
+            <div className="mt-1 flex flex-wrap gap-1">
+              {summary.unsupported.map((client) => {
+                return (
+                  <Badge key={client.label} variant="destructive">
+                    {client.label}
+                  </Badge>
+                );
+              })}
+              {summary.partial.map((client) => {
+                return (
+                  <Badge variant="warning" key={client.label}>
+                    {client.label}
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
         </div>
         <ChevronDownIcon className={`size-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
       </button>
 
       {isExpanded && (
-        <div className="border-t border-slate-200 dark:border-slate-700">
+        <div className={cn('border-t', borderColor)}>
           <div className="p-4">
             <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
               {feature.description || `Support details for ${feature.title}`}
             </p>
-            <a
+            <Link
               target="_blank"
               href={feature.url}
               rel="noopener noreferrer"
-              className="mb-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="mb-4 inline-flex items-center gap-1 text-sm"
             >
               View on caniemail.com
               <ExternalLinkIcon size={12} />
-            </a>
+            </Link>
           </div>
           <iframe
             loading="lazy"
@@ -199,11 +198,14 @@ export function CompatibilityReport({ isLoading, issues }: CompatibilityReportPr
       </div>
 
       {issues.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center p-8 text-center">
-          <div>
-            <p>Enter email HTML to analyze compatibility</p>
-            <p className="mt-1 text-sm">We&apos;ll check your CSS against {MAJOR_CLIENTS.length} major email clients</p>
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+            <ArrowLeftIcon size={18} />
+            <p>Enter email HTML into the input on the left to analyze compatibility</p>
           </div>
+          <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
+            We&apos;ll check your CSS against {MAJOR_CLIENTS.length} major email clients
+          </p>
         </div>
       ) : (
         <>

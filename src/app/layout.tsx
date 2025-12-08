@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
-import { Quicksand, Montserrat, Electrolize } from 'next/font/google';
+import { Quicksand, Montserrat } from 'next/font/google';
 
 import './globals.css';
 import type { PropsWithChildren } from 'react';
@@ -15,12 +15,6 @@ const sansFont = Montserrat({
   variable: '--font-sans',
 });
 
-const monoFont = Electrolize({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  weight: '400',
-});
-
 export const metadata: Metadata = {
   keywords: ['email', 'preview', 'html email', 'email testing', 'email compatibility', 'caniemail'],
   title: 'Email Client Previewer',
@@ -31,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${serifFont.variable} ${sansFont.variable} ${monoFont.variable} antialiased`}>
+      <body className={`${serifFont.variable} ${sansFont.variable} antialiased`}>
         <ThemeProvider enableSystem attribute="class" defaultTheme="system" disableTransitionOnChange>
           {children}
         </ThemeProvider>

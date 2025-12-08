@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 
-interface EmailPreviewProps {
+type EmailPreviewProps = {
   html: string;
-}
+};
 
 export function EmailContentPreview({ html }: EmailPreviewProps) {
   const normalizedHtml = React.useMemo(() => {

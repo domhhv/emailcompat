@@ -125,3 +125,4 @@ MIT
 
 - [caniemail.com](https://www.caniemail.com) for their comprehensive email client support data
 - [Resend](https://resend.com) for the interesting challenge
+- [Email favicon](https://www.flaticon.com/free-icon/email_9840614?term=mail&page=1&position=53&origin=search&related_id=9840614) is created by [lakonicon](https://www.flaticon.com/authors/lakonicon) on Flaticon
