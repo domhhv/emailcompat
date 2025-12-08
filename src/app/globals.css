@@ -8,7 +8,6 @@
   --color-foreground: var(--foreground);
   --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -154,4 +153,20 @@ h5,
 h6 {
   font-family: var(--font-serif);
   font-weight: var(--font-weight-semibold);
+}
+
+a:not([class]) {
+  color: var(--color-sky-600);
+
+  &:hover {
+    color: var(--color-sky-500);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    color: var(--color-sky-400);
+
+    &:hover {
+      color: var(--color-sky-300);
+    }
+  }
 }

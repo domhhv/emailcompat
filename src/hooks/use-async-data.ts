@@ -1,15 +1,14 @@
 import * as React from 'react';
 
-interface UseAsyncDataReturn<T> {
-  data: T | null;
-  isLoading: boolean;
-  error: string | null;
-}
+import { getErrorMessage } from '@/lib/get-error-message';
 
-export function useAsyncData<T>(
-  fetchFn: () => Promise<T>,
-  errorMessage: string = 'Failed to load data. Please refresh the page.'
-): UseAsyncDataReturn<T> {
+type UseAsyncDataReturn<T> = {
+  data: T | null;
+  error: string | null;
+  isLoading: boolean;
+};
+
+export function useAsyncData<T>(fetchFn: () => Promise<T>, errorMessage?: string): UseAsyncDataReturn<T> {
   const [data, setData] = React.useState<T | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -21,9 +20,9 @@ export function useAsyncData<T>(
         const result = await fetchFn();
         setData(result);
         setError(null);
-      } catch (err) {
-        console.error('Failed to load data:', err);
-        setError(errorMessage);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        setError(errorMessage ?? getErrorMessage(error));
       } finally {
         setIsLoading(false);
       }

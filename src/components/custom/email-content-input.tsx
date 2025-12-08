@@ -8,57 +8,19 @@ import { useTheme } from 'next-themes';
 import * as React from 'react';
 
 import { TooltipButton } from '@/components/custom/tooltip-button';
+import { EnterIcon } from '@/components/icons/enter';
 import { Button } from '@/components/ui/button';
+import { sampleEmailHtml } from '@/lib/sample-email-html';
 
-interface EmailInputProps {
+type EmailInputProps = {
+  placeholder?: string;
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
-}
-
-const DEFAULT_PLACEHOLDER = `<!DOCTYPE html>
-<html>
-  <head>
-    <style>
-      .container {
-        margin: 0 auto;
-        font-family: Arial, sans-serif;
-      }
-      .header {
-        background-color: #46e5e5;
-        color: white;
-        padding: 20px;
-        border-radius: 8px 8px 0 0;
-      }
-      .content {
-        padding: 20px;
-        background-color: #ffffff;
-      }
-      .button {
-        display: inline-block;
-        padding: 12px 24px;
-        background-color: #46e5e5;
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>Welcome!</h1>
-      </div>
-      <div class="content">
-        <p>Thanks for signing up. Click below to get started.</p>
-        <a href="#" class="button">Get Started</a>
-      </div>
-    </div>
-  </body>
-</html>`;
+};
 
 export function EmailContentInput({ onChange, placeholder = 'Paste your HTML email here...', value }: EmailInputProps) {
   const { resolvedTheme } = useTheme();
+  const [isFocused, setIsFocused] = React.useState(false);
 
   const extensions = React.useMemo(() => {
     return [html()];
@@ -67,36 +29,59 @@ export function EmailContentInput({ onChange, placeholder = 'Paste your HTML ema
   const theme = resolvedTheme === 'dark' ? vscodeDark : vscodeLight;
 
   const fillSample = React.useCallback(() => {
-    onChange(DEFAULT_PLACEHOLDER);
+    onChange(sampleEmailHtml);
   }, [onChange]);
 
   const clearInput = React.useCallback(() => {
     onChange('');
   }, [onChange]);
 
+  React.useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (isFocused && !value.trim() && event.key === 'Enter') {
+        event.preventDefault();
+        event.stopPropagation();
+        fillSample();
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFocused, value, fillSample]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="border-border flex items-center justify-between border-b px-3 py-2">
-        <div className="flex items-center justify-between gap-2">
-          <h2>HTML Input</h2>
-          {!!value && (
-            <TooltipButton size="icon-sm" variant="ghost" onClick={clearInput} tooltip="Clear email input">
-              <BrushCleaningIcon className="size-4" />
-            </TooltipButton>
-          )}
-        </div>
-        <Button size="sm" variant="secondary" onClick={fillSample}>
-          Try Sample
-        </Button>
+        <h2>HTML Input</h2>
+        {value.trim() ? (
+          <TooltipButton size="icon-sm" variant="ghost" onClick={clearInput} tooltip="Clear email input">
+            <BrushCleaningIcon className="size-4" />
+          </TooltipButton>
+        ) : (
+          <Button size="sm" variant="secondary" onClick={fillSample}>
+            {isFocused && <EnterIcon className="fill-foreground" />}
+            Try Sample
+          </Button>
+        )}
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
         <CodeMirror
+          autoFocus
           height="100%"
           value={value}
           theme={theme}
           onChange={onChange}
           extensions={extensions}
           placeholder={placeholder}
+          onFocus={() => {
+            return setIsFocused(true);
+          }}
+          onBlur={() => {
+            return setIsFocused(false);
+          }}
           style={{
             fontSize: '13px',
             height: '100%',
