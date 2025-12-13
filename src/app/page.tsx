@@ -16,7 +16,14 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAsyncData } from '@/hooks/use-async-data';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useWindowSize } from '@/hooks/use-window-size';
-import { fetchCanIEmailData, type CanIEmailData, buildCssPropertyMap, type CanIEmailFeature } from '@/lib/caniemail';
+import {
+  fetchCanIEmailData,
+  type CanIEmailData,
+  buildCssPropertyMap,
+  buildHtmlElementMap,
+  buildHtmlAttributeMap,
+  type CanIEmailFeature,
+} from '@/lib/caniemail';
 import { extractFeatures } from '@/lib/css-extractor';
 import { cn } from '@/lib/utils';
 
@@ -64,8 +71,20 @@ export default function EmailContentPreviewer() {
     },
   });
 
-  const cssPropertyMap = React.useMemo(() => {
-    return canIEmailData ? buildCssPropertyMap(canIEmailData) : new Map<string, CanIEmailFeature>();
+  const { cssPropertyMap, htmlAttributeMap, htmlElementMap } = React.useMemo(() => {
+    if (!canIEmailData) {
+      return {
+        cssPropertyMap: new Map<string, CanIEmailFeature>(),
+        htmlAttributeMap: new Map<string, CanIEmailFeature>(),
+        htmlElementMap: new Map<string, CanIEmailFeature>(),
+      };
+    }
+
+    return {
+      cssPropertyMap: buildCssPropertyMap(canIEmailData),
+      htmlAttributeMap: buildHtmlAttributeMap(canIEmailData),
+      htmlElementMap: buildHtmlElementMap(canIEmailData),
+    };
   }, [canIEmailData]);
 
   const issues = React.useMemo(() => {
@@ -75,8 +94,15 @@ export default function EmailContentPreviewer() {
 
     const extracted = extractFeatures(debouncedHtml);
 
-    return createCompatibilityIssues(extracted.cssProperties, cssPropertyMap);
-  }, [debouncedHtml, cssPropertyMap]);
+    return createCompatibilityIssues(
+      extracted.cssProperties,
+      extracted.htmlElements,
+      extracted.htmlAttributes,
+      cssPropertyMap,
+      htmlElementMap,
+      htmlAttributeMap
+    );
+  }, [debouncedHtml, cssPropertyMap, htmlElementMap, htmlAttributeMap]);
 
   if (!isMounted) {
     return (
