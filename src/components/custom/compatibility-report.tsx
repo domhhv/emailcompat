@@ -23,8 +23,11 @@ import {
 } from '@/lib/caniemail';
 import { cn } from '@/lib/utils';
 
-type CompatibilityIssue = {
+export type FeatureType = 'css' | 'html-element' | 'html-attribute';
+
+export type CompatibilityIssue = {
   feature: CanIEmailFeature;
+  featureType: FeatureType;
   property: string;
   severity: 'error' | 'warning' | 'success';
   summary: {
@@ -53,6 +56,16 @@ function SeverityIcon({ severity }: { severity: CompatibilityIssue['severity'] }
   }
 }
 
+function FeatureTypeBadge({ featureType }: { featureType: FeatureType }) {
+  const label = featureType === 'css' ? 'CSS' : featureType === 'html-element' ? 'HTML' : 'Attr';
+  const className =
+    featureType === 'css'
+      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+      : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
+
+  return <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-medium', className)}>{label}</span>;
+}
+
 function IssueCard({
   isExpanded,
   issue,
@@ -62,7 +75,7 @@ function IssueCard({
   issue: CompatibilityIssue;
   onToggle: () => void;
 }) {
-  const { feature, severity, summary } = issue;
+  const { feature, featureType, severity, summary } = issue;
   const borderColor =
     severity === 'error'
       ? 'border-red-200 dark:border-red-900/50'
@@ -79,6 +92,7 @@ function IssueCard({
         <SeverityIcon severity={severity} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
+            <FeatureTypeBadge featureType={featureType} />
             <span className="font-medium text-slate-800 dark:text-slate-200">{feature.title}</span>
             <div className="mt-1 flex flex-wrap gap-1">
               {summary.unsupported.map((client) => {
@@ -221,7 +235,7 @@ export function CompatibilityReport({ isLoading, issues }: CompatibilityReportPr
             <p>Enter email HTML into the input on the left to analyze compatibility</p>
           </div>
           <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
-            We&apos;ll check your CSS against {MAJOR_CLIENTS.length} major email clients
+            We&apos;ll check your CSS and HTML against {MAJOR_CLIENTS.length} major email clients
           </p>
         </div>
       ) : (
@@ -262,8 +276,8 @@ export function CompatibilityReport({ isLoading, issues }: CompatibilityReportPr
                 return (
                   <IssueCard
                     issue={issue}
-                    key={issue.feature.slug}
                     isExpanded={expandedIndex === index}
+                    key={`${issue.featureType}-${issue.feature.slug}`}
                     onToggle={() => {
                       return setExpandedIndex(expandedIndex === index ? null : index);
                     }}
@@ -278,24 +292,21 @@ export function CompatibilityReport({ isLoading, issues }: CompatibilityReportPr
   );
 }
 
-// Helper to create issues from extracted features and caniemail data
 export function createCompatibilityIssues(
-  extractedProperties: Set<string>,
-  cssPropertyMap: Map<string, CanIEmailFeature>
+  extractedCssProperties: Set<string>,
+  extractedHtmlElements: Set<string>,
+  extractedHtmlAttributes: Set<string>,
+  cssPropertyMap: Map<string, CanIEmailFeature>,
+  htmlElementMap: Map<string, CanIEmailFeature>,
+  htmlAttributeMap: Map<string, CanIEmailFeature>
 ): CompatibilityIssue[] {
   const issues: CompatibilityIssue[] = [];
   const processedSlugs = new Set<string>();
 
-  for (const property of extractedProperties) {
-    // Try to find matching caniemail feature
+  for (const property of extractedCssProperties) {
     const feature = cssPropertyMap.get(property);
 
-    if (!feature) {
-      continue;
-    }
-
-    // Avoid duplicates (e.g., "background" and "background-color" mapping to same feature)
-    if (processedSlugs.has(feature.slug)) {
+    if (!feature || processedSlugs.has(feature.slug)) {
       continue;
     }
 
@@ -303,7 +314,6 @@ export function createCompatibilityIssues(
 
     const summary = getFeatureSupportSummary(feature);
 
-    // Determine severity based on support
     let severity: CompatibilityIssue['severity'] = 'success';
 
     if (summary.unsupported.length > 0) {
@@ -314,7 +324,64 @@ export function createCompatibilityIssues(
 
     issues.push({
       feature,
+      featureType: 'css',
       property,
+      severity,
+      summary,
+    });
+  }
+
+  for (const element of extractedHtmlElements) {
+    const feature = htmlElementMap.get(element);
+
+    if (!feature || processedSlugs.has(feature.slug)) {
+      continue;
+    }
+
+    processedSlugs.add(feature.slug);
+
+    const summary = getFeatureSupportSummary(feature);
+
+    let severity: CompatibilityIssue['severity'] = 'success';
+
+    if (summary.unsupported.length > 0) {
+      severity = 'error';
+    } else if (summary.partial.length > 0) {
+      severity = 'warning';
+    }
+
+    issues.push({
+      feature,
+      featureType: 'html-element',
+      property: `<${element}>`,
+      severity,
+      summary,
+    });
+  }
+
+  for (const attribute of extractedHtmlAttributes) {
+    const feature = htmlAttributeMap.get(attribute);
+
+    if (!feature || processedSlugs.has(feature.slug)) {
+      continue;
+    }
+
+    processedSlugs.add(feature.slug);
+
+    const summary = getFeatureSupportSummary(feature);
+
+    let severity: CompatibilityIssue['severity'] = 'success';
+
+    if (summary.unsupported.length > 0) {
+      severity = 'error';
+    } else if (summary.partial.length > 0) {
+      severity = 'warning';
+    }
+
+    issues.push({
+      feature,
+      featureType: 'html-attribute',
+      property: attribute,
       severity,
       summary,
     });
