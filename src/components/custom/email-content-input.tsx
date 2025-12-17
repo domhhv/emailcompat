@@ -12,6 +12,7 @@ import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { useHasKeyboard } from '@/hooks/use-has-keyboard';
 import { useModifierKeys } from '@/hooks/use-modifier-keys';
 import { sampleEmailHtml } from '@/lib/sample-email-html';
+import { cn } from '@/lib/utils';
 
 type EmailInputProps = {
   placeholder?: string;
@@ -87,9 +88,14 @@ export function EmailContentInput({ onChange, placeholder = 'Paste your HTML ema
             onClick={fillSample}
             tooltip="Fill input with sample email HTML for quick compatibility preview"
             aria-label="Fill input with sample email HTML for quick compatibility preview"
+            className={cn('space-x-0.5 transition-colors', isFocused && hasKeyboard && 'pl-1.5')}
           >
             {isFocused && hasKeyboard && (
-              <KbdGroup className="mr-2">
+              <KbdGroup
+                onClick={() => {
+                  return fillSample();
+                }}
+              >
                 <Kbd>{mod}</Kbd>
                 <Kbd>{shift}</Kbd>
                 <Kbd>E</Kbd>
@@ -111,12 +117,14 @@ export function EmailContentInput({ onChange, placeholder = 'Paste your HTML ema
           onFocus={() => {
             return setIsFocused(true);
           }}
-          onBlur={() => {
-            return setIsFocused(false);
-          }}
           style={{
             fontSize: '13px',
             height: '100%',
+          }}
+          onBlur={() => {
+            return setTimeout(() => {
+              return setIsFocused(false);
+            }, 200);
           }}
           basicSetup={{
             autocompletion: true,
