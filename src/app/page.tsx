@@ -210,7 +210,7 @@ export default function EmailContentPreviewer() {
               }}
             >
               <BugIcon className="h-4 w-4" />
-              {viewMode === 'report' && 'Editor'}
+              {viewMode === 'report' && 'Report'}
             </Button>
           </div>
         </div>
