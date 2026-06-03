@@ -9,7 +9,6 @@ export function useUnmount(fn: () => void): void {
 
   const fnRef = React.useRef(fn);
 
-  // eslint-disable-next-line react-hooks/refs
   fnRef.current = fn;
 
   React.useEffect(() => {

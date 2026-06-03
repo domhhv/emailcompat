@@ -29,7 +29,6 @@ export function useAsyncData<T>(fetchFn: () => Promise<T>, errorMessage?: string
     }
 
     void loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { data, error, isLoading };
