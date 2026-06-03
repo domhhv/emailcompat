@@ -40,7 +40,7 @@ export default function EmailContentPreviewer() {
 
   const cycleViewMode = React.useCallback(
     (direction: 'left' | 'right') => {
-      const currentIndex = VIEW_MODES.indexOf(viewMode as ViewMode);
+      const currentIndex = VIEW_MODES.indexOf(viewMode);
       let nextIndex: number;
 
       if (direction === 'left') {
@@ -117,20 +117,20 @@ export default function EmailContentPreviewer() {
           </div>
         )}
 
-        <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
-          <ResizablePanel minSize={20} defaultSize={30}>
+        <ResizablePanelGroup orientation="horizontal" className="flex-1 overflow-hidden">
+          <ResizablePanel minSize="20%" defaultSize="30%">
             <EmailContentInput value={html} onChange={setHtml} />
           </ResizablePanel>
 
-          <ResizableHandle isWithHandle />
+          <ResizableHandle withHandle />
 
-          <ResizablePanel maxSize={50} minSize={15} defaultSize={35}>
+          <ResizablePanel maxSize="50%" minSize="15%" defaultSize="35%">
             <EmailContentPreview html={html} />
           </ResizablePanel>
 
-          <ResizableHandle isWithHandle />
+          <ResizableHandle withHandle />
 
-          <ResizablePanel minSize={20} defaultSize={30}>
+          <ResizablePanel minSize="20%" defaultSize="30%">
             <CompatibilityReport issues={issues} isLoading={isLoading} />
           </ResizablePanel>
         </ResizablePanelGroup>

@@ -1,4 +1,4 @@
-import { type Root, type AtRule, type Declaration } from 'postcss';
+import { type Root } from 'postcss';
 import safeParser from 'postcss-safe-parser';
 
 export function extractFeatures(html: string) {
@@ -62,7 +62,7 @@ function extractStyleTags(
 function extractPropertiesFromAst(root: Root, properties: Set<string>, values: Map<string, Set<string>>): void {
   root.walk((node) => {
     if (node.type === 'decl') {
-      const decl = node as Declaration;
+      const decl = node;
       const prop = decl.prop.toLowerCase();
       const isVendorProperty = prop.startsWith('-');
 
@@ -113,7 +113,7 @@ function extractValueFeatures(value: string, properties: Set<string>) {
 function extractAtRulesFromAst(root: Root, atRules: Set<string>) {
   root.walk((node) => {
     if (node.type === 'atrule') {
-      const rule = node as AtRule;
+      const rule = node;
       const ruleName = `@${rule.name.toLowerCase()}`;
       atRules.add(ruleName);
 
