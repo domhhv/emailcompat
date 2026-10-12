@@ -28,7 +28,7 @@ function extractInlineStyles(html: string, properties: Set<string>, values: Map<
     const wrappedCss = `* { ${styleContent} }`;
 
     try {
-      const root = safeParser(wrappedCss);
+      const root = safeParser(wrappedCss) as Root;
       extractPropertiesFromAst(root, properties, values);
     } catch {
       extractPropertiesSimple(styleContent, properties);
@@ -49,7 +49,7 @@ function extractStyleTags(
     const cssContent = match[1];
 
     try {
-      const root = safeParser(cssContent);
+      const root = safeParser(cssContent) as Root;
       extractPropertiesFromAst(root, properties, values);
       extractAtRulesFromAst(root, atRules);
     } catch {
